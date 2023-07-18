@@ -17,12 +17,11 @@
 # change hostname to tomcat
 sudo hostnamectl set-hostname tomcat
 sudo su - ec2-user
-sudo yum update
-cd /opt 
 sudo yum update -y
+cd /opt 
 
 # install wget unzip git packages.
-sudo yum install git wget unzip -y
+sudo yum install git wget vim unzip -y
 
 # install Java  as a pre-requisite for tomcat to run.
 #list possible versions in yum package repo
@@ -58,6 +57,19 @@ starttomcat
 sudo su - ec2-user
 ```
 
+## Enable Manager app and create users & roles
+``` sh
+Go to this dir /opt/tomcat10/webapps/manager/META-INF
+vi to the context.xml and comment the line betwwen the <context> tag
+
+restart the tomcat server and check the web browser to see if the manager app is enabled.
+
+To create users and password
+vi to /opt/tomcat10/conf/tomcat-users.xml
+Restart your tomcat server again
+
+```
+
 ## To Deploy your application  / artifact
 ### Use need to paste your artifact in the webapp dir/folder
 ``` sh
@@ -76,3 +88,37 @@ sudo passwd ec2-user    #to set new password for ec2-user
 
 ```
 
+## NGINX webserver acts as a proxy server a.k.a load balancer
+```sh
+events{
+worker_connections 1024;
+}
+http { keepalive_timeout 5;
+upstream tomcatServers  {
+        keepalive 50;
+        server 172.31.19.111:8080;
+        server 172.31.21.48:8080;
+}
+server  {
+        listen 80;
+location / {
+        proxy_set_header X-Real-lP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header        Host $host;
+        proxy_pass http://tomcatServers;
+}       
+}
+}
+```
+
+
+```sh
+sudo nginx -t
+
+#and reload nginx will this command
+sudo nginx -s reload
+
+sudo setsebool -P httpd_can_network_connect true
+
+```
