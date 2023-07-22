@@ -87,7 +87,23 @@ sudo systemctl restart sshd    #reestart the Service so that your changes will b
 sudo passwd ec2-user    #to set new password for ec2-user
 
 ```
+## NGINX Installation
+```sh
+T2.medium Redhat Server
 
+Open port 80 and 443 (HTTP & HTTPS)
+
+sudo yum install nginx -y
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+cd /etc
+cd /etc | grep nginx
+
+cd nginx
+
+sudo vi nginx.conf
+```
 ## NGINX webserver acts as a proxy server a.k.a load balancer
 ```sh
 events{
@@ -97,6 +113,7 @@ http { keepalive_timeout 5;
 upstream tomcatServers  {
         keepalive 50;
         server 172.31.19.111:8080;
+        server 172.31.21.48:8080;
         server 172.31.21.48:8080;
 }
 server  {
@@ -120,5 +137,7 @@ sudo nginx -t
 sudo nginx -s reload
 
 sudo setsebool -P httpd_can_network_connect true
+
+sudo systemctl restart nginx
 
 ```
